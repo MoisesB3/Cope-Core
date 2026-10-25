@@ -53,6 +53,8 @@ public class CopeCommand implements TabExecutor {
     private final Map<String, SubCommand> subs = new LinkedHashMap<>();
     /** What "/command" does with no arguments. Shows the help page unless changed. */
     private Consumer<CommandContext> defaultAction;
+    /** Optional: handles "/command <something that isn't a sub command>" (see {@link #fallback()}). */
+    private SubCommand fallback;
 
     /**
      * @param plugin   your plugin
@@ -75,6 +77,27 @@ public class CopeCommand implements TabExecutor {
         SubCommand sub = new SubCommand(subName);
         subs.put(sub.name(), sub);
         return sub;
+    }
+
+    /**
+     * Handles a first argument that is NOT a sub command name, for commands shaped like
+     * "/coni &lt;player&gt; [type]" or "/rtp &lt;zone&gt;". Set it up like a normal sub command; inside it,
+     * {@code ctx.arg(0)} is the first word the player typed. It's listed first on the help page.
+     *
+     * <pre>{@code
+     * command.fallback()
+     *         .usage("<player|all|random> [type]").description("Scare someone").minArgs(1)
+     *         .tab(ctx -> ctx.size() == 1 ? onlineNames() : scareTypes())
+     *         .executes(ctx -> scare(ctx.sender(), ctx.arg(0), ctx.argOr(1, "random")));
+     * }</pre>
+     *
+     * <p>Without a fallback, an unknown first word shows the "unknown command" message. (Added in API 2.)</p>
+     */
+    public final SubCommand fallback() {
+        if (fallback == null) {
+            fallback = new SubCommand("");
+        }
+        return fallback;
     }
 
     /** What happens when the command is typed with no arguments (for example, opening a menu). */
@@ -111,11 +134,17 @@ public class CopeCommand implements TabExecutor {
         }
 
         SubCommand sub = find(args[0]);
-        if (sub == null) {
+        String[] rest;
+        if (sub != null) {
+            rest = Arrays.copyOfRange(args, 1, args.length);
+        } else if (fallback != null) {
+            // Not a sub command name: the fallback gets ALL the arguments.
+            sub = fallback;
+            rest = args;
+        } else {
             messages.send(sender, "generic.unknown-subcommand", "input", args[0], "label", label);
             return true;
         }
-        String[] rest = Arrays.copyOfRange(args, 1, args.length);
 
         if (sub.permission() != null && !sender.hasPermission(sub.permission())) {
             messages.send(sender, "generic.no-permission");
@@ -129,7 +158,7 @@ public class CopeCommand implements TabExecutor {
             sendUsage(sender, label, sub);
             return true;
         }
-        run(sender, label, args[0], rest, sub, sub.executor());
+        run(sender, label, sub == fallback ? "" : args[0], rest, sub, sub.executor());
         return true;
     }
 
@@ -157,7 +186,8 @@ public class CopeCommand implements TabExecutor {
     }
 
     private void sendUsage(CommandSender sender, String label, SubCommand sub) {
-        String usage = "/" + label + " " + sub.name() + (sub.usage().isEmpty() ? "" : " " + sub.usage());
+        String usage = "/" + label + (sub.name().isEmpty() ? "" : " " + sub.name())
+                + (sub.usage().isEmpty() ? "" : " " + sub.usage());
         messages.send(sender, "generic.usage", "usage", escapeAngles(usage));
     }
 
@@ -168,7 +198,12 @@ public class CopeCommand implements TabExecutor {
     public final void sendHelp(CommandSender sender, String label) {
         messages.sendRaw(sender, "generic.help-header",
                 "plugin", plugin.getName(), "version", plugin.getDescription().getVersion());
-        for (SubCommand sub : subs.values()) {
+        List<SubCommand> lines = new ArrayList<>();
+        if (fallback != null) {
+            lines.add(fallback);
+        }
+        lines.addAll(subs.values());
+        for (SubCommand sub : lines) {
             if (sub.isHidden() || !canUse(sender, sub)) {
                 continue;
             }
@@ -176,7 +211,7 @@ public class CopeCommand implements TabExecutor {
                     ? messages.format(sub.descriptionKey())
                     : sub.description();
             messages.sendRaw(sender, "generic.help-line",
-                    "command", label + " " + sub.name(),
+                    "command", label + (sub.name().isEmpty() ? "" : " " + sub.name()),
                     "usage", escapeAngles(sub.usage()),
                     "description", description);
         }
@@ -198,20 +233,42 @@ public class CopeCommand implements TabExecutor {
                     names.add(sub.name());
                 }
             }
+            // The fallback's own suggestions for the first word (player names, zones...).
+            if (fallback != null && canUse(sender, fallback)) {
+                names.addAll(suggest(fallback, sender, label, args.length == 0 ? new String[]{""} : args));
+            }
             return filter(names, typed);
         }
 
-        // Typing an argument: ask the sub command.
+        // Typing an argument: ask the sub command (or the fallback, which sees all arguments).
         SubCommand sub = find(args[0]);
-        if (sub == null || !canUse(sender, sub)) {
+        String[] rest;
+        if (sub != null) {
+            rest = Arrays.copyOfRange(args, 1, args.length);
+        } else if (fallback != null) {
+            sub = fallback;
+            rest = args;
+        } else {
             return Collections.emptyList();
         }
-        String[] rest = Arrays.copyOfRange(args, 1, args.length);
+        if (!canUse(sender, sub)) {
+            return Collections.emptyList();
+        }
         try {
             List<String> options = sub.tabCompleter().apply(new CommandContext(sender, label, args[0], rest, messages));
             return filter(options == null ? Collections.emptyList() : options, rest[rest.length - 1]);
         } catch (RuntimeException error) {
             return Collections.emptyList(); // a broken tab completer must never spam errors while typing
+        }
+    }
+
+    /** A sub command's raw suggestions (unfiltered), never throwing. */
+    private List<String> suggest(SubCommand sub, CommandSender sender, String label, String[] args) {
+        try {
+            List<String> options = sub.tabCompleter().apply(new CommandContext(sender, label, "", args, messages));
+            return options == null ? Collections.emptyList() : options;
+        } catch (RuntimeException error) {
+            return Collections.emptyList();
         }
     }
 

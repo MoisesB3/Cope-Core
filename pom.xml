@@ -35,7 +35,7 @@
     <!-- The "coordinates" other plugins use to depend on CopeCore (see README.md). -->
     <groupId>us.copestudios</groupId>
     <artifactId>copecore</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>CopeCore</name>
@@ -123,7 +123,7 @@
     </dependencies>
 
     <build>
-        <!-- Output: target/CopeCore-1.0.0.jar -->
+        <!-- Output: target/CopeCore-1.1.0.jar -->
         <finalName>CopeCore-${project.version}</finalName>
 
         <resources>

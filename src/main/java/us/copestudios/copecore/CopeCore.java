@@ -58,15 +58,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * </table>
  * <p>Plus classes you use directly: {@code Text}, {@code ConfigFile}, {@code CopeCommand}, {@code Menu},
  * {@code ItemBuilder}, {@code Tasks}, {@code Cooldowns}, {@code RewardSet}, {@code Sounds}, {@code TimeFormat},
- * {@code Locations}, {@code ServerVersion}, {@code Services}.</p>
+ * {@code Locations}, {@code ServerVersion}, {@code Services}, {@code Particles}, {@code Attributes}, {@code Entities}.</p>
  */
 public final class CopeCore extends JavaPlugin implements Listener {
 
     /**
      * Version of CopeCore's API. Goes up by one whenever something is ADDED that other plugins may rely on.
      * Plugins check it with {@link #requireApi(Plugin, int)}.
+     * <ul>
+     *   <li>1 - CopeCore 1.0.0: first release</li>
+     *   <li>2 - CopeCore 1.1.0: Particles, Attributes, Entities, CopeCommand.fallback()</li>
+     * </ul>
      */
-    public static final int API_VERSION = 1;
+    public static final int API_VERSION = 2;
 
     private static CopeCore instance;
 
