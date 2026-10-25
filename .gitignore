@@ -1,0 +1,12 @@
+# Build output
+target/
+dependency-reduced-pom.xml
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# OS junk
+.DS_Store
+Thumbs.db

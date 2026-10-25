@@ -1,0 +1,41 @@
+# =============================================================================
+#  CopeCore - plugin.yml
+# =============================================================================
+#  ${project.version} is filled in automatically by Maven when you build.
+#
+#  Every other Cope plugin must have this in ITS plugin.yml:
+#      depend: [CopeCore]
+#  so the server always loads CopeCore first.
+# =============================================================================
+
+name: CopeCore
+version: '${project.version}'
+main: us.copestudios.copecore.CopeCore
+
+# '1.20' = "this plugin understands the 1.20 API and newer".
+# The server will refuse to load it on anything older than 1.20.
+api-version: '1.20'
+
+author: Z3R0 / Cope Studios
+website: https://copestudios.us
+description: Shared core for every Cope Studios plugin - messages, GUIs, regions, prompts and more.
+
+# Optional plugins. If they are installed they load BEFORE CopeCore, so we can hook into them.
+softdepend: [PlaceholderAPI]
+
+commands:
+  copecore:
+    description: CopeCore admin command (info, reload, selection wand, regions, debug).
+    usage: /<command> help
+    aliases: [ccore]
+    permission: copecore.admin
+
+permissions:
+  copecore.admin:
+    description: Full access to /copecore.
+    default: op
+    children:
+      copecore.wand: true
+  copecore.wand:
+    description: Lets a player get and use the region selection wand.
+    default: op

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ============================================================================
+     CopeCore - pom.xml
+    ============================================================================
+     CopeCore is the shared library plugin for every Cope Studios plugin.
+     It is a normal Bukkit plugin (it has a plugin.yml and goes in /plugins),
+     but its main job is to provide code that the other plugins call.
+
+     HOW TO BUILD
+       In IntelliJ: open the Maven tab -> CopeCore -> Lifecycle -> double click "install".
+       From a terminal: mvn clean install
+
+       "install" does two things:
+         1. Builds target/CopeCore-<version>.jar  -> put this jar in your server's /plugins folder.
+         2. Copies the jar into your local Maven repository (~/.m2/repository/us/copestudios/copecore)
+            so the other plugins (Cope Bosses, CSKoth, ...) can compile against it.
+
+     WHY THESE CHOICES
+       * Spigot API 1.20.1 (not Paper):  Spigot is the common ground of Spigot, Paper, Purpur and
+         hybrids such as Arclight. Compiling against the OLDEST version we support (1.20.1) means we
+         can only call methods that exist on every version from 1.20.1 up to the newest 1.21.x.
+       * Java 17 bytecode:  Minecraft 1.20 - 1.20.4 servers run on Java 17, 1.20.5+ needs Java 21.
+         Java 17 bytecode runs on both, so ONE jar works everywhere.
+       * Adventure (MiniMessage) is BUNDLED and RELOCATED: Spigot does not ship it, and Paper ships a
+         different version. Relocating (renaming the package to us.copestudios.copecore.libs.kyori)
+         means our copy never clashes with the server's copy or another plugin's copy.
+    ============================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- The "coordinates" other plugins use to depend on CopeCore (see README.md). -->
+    <groupId>us.copestudios</groupId>
+    <artifactId>copecore</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>CopeCore</name>
+    <description>Shared core library for all Cope Studios plugins: messages, GUIs, regions, prompts and more.</description>
+
+    <properties>
+        <!-- Java 17 bytecode = runs on Java 17 (MC 1.20-1.20.4) AND Java 21 (MC 1.20.5+). -->
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Lowest Minecraft version we support. Change this ONLY if you drop old versions. -->
+        <spigot.version>1.20.1-R0.1-SNAPSHOT</spigot.version>
+
+        <!-- Adventure / MiniMessage version that gets bundled inside the jar. -->
+        <adventure.version>4.17.0</adventure.version>
+
+        <!-- Where the bundled libraries end up inside our jar. Never change this after release:
+             plugins compiled against an older CopeCore would not notice, but it keeps things tidy. -->
+        <relocation.base>us.copestudios.copecore.libs</relocation.base>
+    </properties>
+
+    <repositories>
+        <!-- Spigot API -->
+        <repository>
+            <id>spigotmc-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <!-- PlaceholderAPI (optional at runtime, only needed to compile the hook) -->
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/releases/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- ===== Provided by the server: compiled against, NOT bundled ===== -->
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>${spigot.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Optional soft dependency. CopeCore works without PlaceholderAPI installed. -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.11.6</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ===== Bundled inside CopeCore.jar (shaded + relocated) ===== -->
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-api</artifactId>
+            <version>${adventure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-minimessage</artifactId>
+            <version>${adventure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-serializer-legacy</artifactId>
+            <version>${adventure.version}</version>
+        </dependency>
+        <!-- Turns a message into JSON so we can send clickable/hoverable text on Spigot AND Paper. -->
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-serializer-gson</artifactId>
+            <version>${adventure.version}</version>
+            <exclusions>
+                <!-- Gson is already part of every Minecraft server - do not bundle a second copy. -->
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.auto.service</groupId>
+                    <artifactId>auto-service-annotations</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- Output: target/CopeCore-1.0.0.jar -->
+        <finalName>CopeCore-${project.version}</finalName>
+
+        <resources>
+            <!-- Only plugin.yml is "filtered", which fills in ${project.version}.
+                 The other files are copied as-is so a "${" inside a message is never touched. -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>plugin.yml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>plugin.yml</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <!-- Compiles the code to Java 17 bytecode. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                    <compilerArgs>
+                        <!-- Keeps parameter names so IntelliJ shows them when other plugins call CopeCore. -->
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- Also builds a "-sources.jar". Installed next to the main jar so IntelliJ shows CopeCore's
+                 comments and code when you Ctrl+Click a CopeCore method from another plugin. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Bundles Adventure into the jar and renames its package (relocation). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <!-- IMPORTANT: true (the default) writes a pom WITHOUT the bundled libraries.
+                                 That way plugins depending on CopeCore don't accidentally pull Adventure
+                                 into their own jars. -->
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <artifactSet>
+                                <excludes>
+                                    <!-- Annotation-only jars, not needed at runtime. -->
+                                    <exclude>org.jetbrains:annotations</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>net.kyori</pattern>
+                                    <shadedPattern>${relocation.base}.kyori</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <transformers>
+                                <!-- Adventure finds some of its parts through META-INF/services files.
+                                     This transformer fixes those files after relocation. -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/versions/**/module-info.class</exclude>
+                                        <exclude>module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

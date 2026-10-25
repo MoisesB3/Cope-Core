@@ -1,0 +1,100 @@
+# =============================================================================
+#  CopeCore - config.yml
+# =============================================================================
+#  Settings for the shared core. Every Cope plugin uses these features, so a
+#  change here affects all of them (for example, the chat prompt timeout).
+#
+#  After editing, run /copecore reload (or restart the server).
+#  If this file ever gets broken or emptied, CopeCore keeps a copy named
+#  config.yml.broken-<time> and writes a fresh one, so the server never runs
+#  without settings.
+# =============================================================================
+
+# Do not change. Used to upgrade this file automatically in future versions.
+config-version: 1
+
+# Prints extra information to the console (who clicked what, region events,
+# placeholder lookups...). Leave this off unless you are hunting a bug.
+debug: false
+
+# -----------------------------------------------------------------------------
+#  Startup checks
+# -----------------------------------------------------------------------------
+startup:
+  # Prints a short banner listing every plugin that uses CopeCore.
+  show-banner: true
+  # Warns in the console when two plugins claim the same command or alias
+  # (for example CSCombat and Cope Bosses both using /cb).
+  warn-command-conflicts: true
+
+# -----------------------------------------------------------------------------
+#  Chat prompts ("type the value in chat")
+#  Used by every editor GUI: KOTH settings, boss editor, arena setup...
+# -----------------------------------------------------------------------------
+prompts:
+  # Seconds before an unanswered prompt gives up. 0 = never times out.
+  timeout-seconds: 60
+  # Typing any of these (any capitalization) cancels the prompt.
+  cancel-words:
+    - cancel
+    - cancelar
+    - exit
+  # Word a player types to use their current location ("here" prompts).
+  here-words:
+    - here
+    - aqui
+
+# -----------------------------------------------------------------------------
+#  Menus (chest GUIs)
+# -----------------------------------------------------------------------------
+menus:
+  # Pane used for the border of menus that call fillBorder().
+  border-material: ORANGE_STAINED_GLASS_PANE
+  # Pane used to fill empty slots.
+  filler-material: BLACK_STAINED_GLASS_PANE
+  # Minimum time between two clicks from the same player, in milliseconds.
+  # Stops auto-clickers from spamming buttons. 0 = off.
+  click-cooldown-ms: 150
+  # Sound played on every button click. Leave empty ("") for no sound.
+  # Accepts Minecraft sound keys (ui.button.click) or old names (UI_BUTTON_CLICK).
+  click-sound: "ui.button.click:0.6:1.0"
+
+# -----------------------------------------------------------------------------
+#  Region selection wand (/copecore wand)
+#  Left click a block = corner 1, right click a block = corner 2.
+#  Other plugins read your selection when you create a KOTH, arena, zone...
+# -----------------------------------------------------------------------------
+selection:
+  # Item used as the wand. It is tagged, so a normal blaze rod does nothing.
+  wand-material: BLAZE_ROD
+  # Draw particles around the selected box after each click.
+  show-outline: true
+  # How long the outline stays visible, in seconds.
+  outline-seconds: 10
+  # Particle used for the outline. The first one that exists on your server
+  # version is used (particle names changed in 1.20.5).
+  outline-particles:
+    - HAPPY_VILLAGER
+    - VILLAGER_HAPPY
+    - END_ROD
+    - FLAME
+
+# -----------------------------------------------------------------------------
+#  Regions
+# -----------------------------------------------------------------------------
+regions:
+  # Fire RegionEnterEvent / RegionLeaveEvent when players walk in and out of
+  # any region from any Cope plugin. Plugins such as CSNumbers and CSKoth use
+  # these events instead of each watching every player movement themselves.
+  # Turn off only if no installed plugin needs it.
+  enter-leave-events: true
+
+# -----------------------------------------------------------------------------
+#  PlaceholderAPI
+# -----------------------------------------------------------------------------
+placeholders:
+  # Registers one shared expansion: %cope_<plugin>_<placeholder>%
+  # e.g. %cope_koth_wins%, %cope_bosses_kills%
+  enabled: true
+  # Replace PlaceholderAPI placeholders inside CopeCore messages too.
+  parse-in-messages: true

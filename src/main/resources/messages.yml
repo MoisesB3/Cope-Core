@@ -1,0 +1,142 @@
+# =============================================================================
+#  CopeCore - messages.yml
+# =============================================================================
+#  FORMATTING - every message supports ALL of these, even mixed together:
+#
+#    MiniMessage (recommended):
+#      <red>, <#FF8800>, <bold>, <italic>, <underlined>, <reset>
+#      <gradient:#FF8800:#8B0000>Blood Moon</gradient>
+#      <rainbow>Party!</rainbow>
+#      <hover:show_text:'<gray>Tooltip'>hover me</hover>
+#      <click:run_command:'/spawn'>click me</click>
+#      <click:suggest_command:'/msg '>fills the chat box</click>
+#      <click:open_url:'https://copestudios.us'>website</click>
+#
+#    Old-style codes (still work, so old configs keep working):
+#      &a &c &l &o &r     classic colors and styles
+#      &#FF8800           hex color
+#      &x&F&F&8&8&0&0     hex color (Spigot format)
+#
+#  PLACEHOLDERS - written <name>, {name} or %name% (all three work).
+#  Each message lists the placeholders it supports.
+#
+#  SHARED MESSAGES - the "generic" section below is also used by every other
+#  Cope plugin (no-permission, players-only, ...). A plugin can override any of
+#  them by putting the same key in its own messages.yml.
+#
+#  Set a message to "" (empty) to disable it.
+# =============================================================================
+
+# Shown before CopeCore's own messages. Other plugins have their own prefix.
+prefix: "<gradient:#FFB347:#FF6A00><bold>CopeCore</bold></gradient> <dark_gray>»</dark_gray> "
+
+# -----------------------------------------------------------------------------
+#  Shared by ALL Cope plugins
+# -----------------------------------------------------------------------------
+generic:
+  no-permission: "<red>You don't have permission to do that."
+  players-only: "<red>Only players can use this command."
+  unknown-subcommand: "<red>Unknown command <white><input></white>. Try <white>/<label> help</white>."
+  # <usage> = the correct way to type the command
+  usage: "<red>Usage: <white><usage>"
+  not-a-number: "<red><input> <red>is not a valid number."
+  number-out-of-range: "<red>Pick a number from <white><min></white> to <white><max></white>."
+  player-not-found: "<red>No online player named <white><input></white>."
+  # <time> = remaining time, e.g. "12s" or "1m 5s"
+  on-cooldown: "<red>Wait <white><time></white> before doing that again."
+  reloaded: "<green>Reloaded <white><plugin></white> in <white><ms>ms</white>."
+  error: "<red>Something went wrong. The details are in the server console."
+
+  # Auto-generated /<command> help pages
+  help-header: "<dark_gray><st>          </st> <gold><bold><plugin></bold></gold> <gray>v<version></gray> <dark_gray><st>          </st>"
+  # <command> <usage> <description>
+  help-line: "<gold>/<command> <yellow><usage></yellow> <dark_gray>-</dark_gray> <gray><description>"
+  help-footer: ""
+  # Description of the automatic "help" sub command on every help page
+  help-command: "Show this list"
+
+  # Menus
+  menu-back: "<red>« Back"
+  menu-close: "<red>Close"
+  menu-next-page: "<green>Next page »"
+  menu-previous-page: "<green>« Previous page"
+  # <page> <pages>
+  menu-page-info: "<gray>Page <white><page></white>/<white><pages>"
+  # Lore added to number buttons in editors
+  menu-number-hint:
+    - ""
+    - "<dark_gray>Left click: <gray>+<step>"
+    - "<dark_gray>Right click: <gray>-<step>"
+    - "<dark_gray>Shift: <gray>x10"
+    - "<dark_gray>Q (drop): <gray>type a value"
+
+# -----------------------------------------------------------------------------
+#  Chat prompts (used by every plugin's editors)
+# -----------------------------------------------------------------------------
+prompt:
+  # Sent under every question. <cancel> = the first cancel word from config.yml
+  hint: "<dark_gray>Type <gray><cancel></gray> to go back."
+  # <here> = the first "here" word from config.yml
+  here-hint: "<dark_gray>Stand at the spot and type <gray><here></gray>."
+  # Asked when a player presses Q on a number button. <label> <current> <min> <max>
+  number-question: "<gray>Type a new value for <white><label></white> <dark_gray>(now <white><current></white>, allowed <white><min></white> to <white><max></white>)"
+  # <min> <max>
+  invalid-number: "<red>Type a number from <white><min></white> to <white><max></white>."
+  cancelled: "<gray>Cancelled."
+  timed-out: "<red>You took too long to answer, so the question was cancelled."
+  invalid-yes-no: "<red>Please answer <white>yes</white> or <white>no</white>."
+  # <input> = what the player typed
+  invalid-here: "<red>Type <white><here></white> while standing at the spot, or <white><cancel></white>."
+
+# -----------------------------------------------------------------------------
+#  Selection wand
+# -----------------------------------------------------------------------------
+selection:
+  wand-name: "<gradient:#FFB347:#FF6A00><bold>Cope Selection Wand</bold></gradient>"
+  wand-lore:
+    - "<gray>Left click a block: <white>corner 1"
+    - "<gray>Right click a block: <white>corner 2"
+    - ""
+    - "<dark_gray>Used to create KOTHs, arenas, zones..."
+  wand-given: "<green>You received the selection wand."
+  # <corner> = 1 or 2, <x> <y> <z> <world>
+  corner-set: "<green>Corner <white><corner></white> set to <white><x>, <y>, <z></white> <gray>(<world>)"
+  # <x> <y> <z> = size in blocks, <volume> = total blocks
+  selection-size: "<gray>Selection: <white><x></white>×<white><y></white>×<white><z></white> <dark_gray>(<volume> blocks)"
+  incomplete: "<red>Select two corners first with <white>/copecore wand</white>."
+  different-worlds: "<red>Both corners must be in the same world."
+  cleared: "<gray>Selection cleared."
+
+# -----------------------------------------------------------------------------
+#  /copecore
+# -----------------------------------------------------------------------------
+command:
+  help-description:
+    info: "Version, server and connected plugins"
+    reload: "Reload CopeCore's config and messages"
+    wand: "Get the region selection wand"
+    pos1: "Set corner 1 where you stand"
+    pos2: "Set corner 2 where you stand"
+    selection: "Show or clear your selection"
+    regions: "List regions here or from a plugin"
+    states: "Show a player's shared states (combat, arena...)"
+    debug: "Turn debug logging on or off"
+  # <version> <server> <java>
+  info-header: "<gold>CopeCore <white>v<version></white> <gray>on <white><server></white> <gray>(Java <java>)"
+  # <count>
+  info-plugins: "<gray>Plugins using CopeCore (<white><count></white>):"
+  # <plugin> <version> <status> (<status> is a color: green = enabled, red = disabled)
+  info-plugin-line: "<dark_gray>- <status><plugin> <gray>v<version>"
+  info-no-plugins: "<dark_gray>- none yet"
+  # <count> <where>
+  regions-header: "<gold><count> <gray>region(s) <where>:"
+  # <plugin> <region> <description>
+  regions-line: "<dark_gray>- <yellow><plugin></yellow>:<white><region></white> <dark_gray><description>"
+  regions-none: "<gray>No regions <where>."
+  # <player>
+  states-header: "<gold>States of <white><player></white>:"
+  # <state> <time>
+  states-line: "<dark_gray>- <white><state></white> <gray><time>"
+  states-none: "<gray><player> has no active states."
+  # <state> = on/off
+  debug-toggled: "<gray>Debug logging is now <white><state></white>."
